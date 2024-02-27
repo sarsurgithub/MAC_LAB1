@@ -27,11 +27,11 @@ public class Requests {
     }
 
     public List<JsonObject> hiddenGem() {
-                var result = ctx.query("""
-                        SELECT m.title
-                        FROM `mflix-sample`._default.movies m
-                        WHERE m.tomatoes.critic.rating = 10 AND m.tomatoes.viewer IS MISSING
-                        """
+        var result = ctx.query("""
+                SELECT m.title
+                FROM `mflix-sample`._default.movies m
+                WHERE m.tomatoes.critic.rating = 10 AND m.tomatoes.viewer IS MISSING
+                """
         );
         return result.rowsAs(JsonObject.class);
     }
@@ -41,7 +41,14 @@ public class Requests {
     }
 
     public List<String> greatReviewers() {
-        throw new UnsupportedOperationException("Not implemented, yet");
+        var result = ctx.query("""
+                        SELECT DISTINCT RAW c.email
+                        FROM `mflix-sample`._default.comments c
+                        GROUP BY c.email
+                        HAVING COUNT(*) > 300
+                        """
+        );
+        return result.rowsAs(String.class);
     }
 
     public List<JsonObject> bestMoviesOfActor(String actor) {
