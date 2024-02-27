@@ -72,11 +72,21 @@ public class Requests {
     }
 
     public List<JsonObject> commentsOfDirector1(String director) {
-        throw new UnsupportedOperationException("Not implemented, yet");
+        // need to create index
+        var result = ctx.query("SELECT comments.text\n" +
+                               "FROM `mflix-sample`._default.movies m\n" +
+                               "JOIN `mflix-sample`._default.comments ON comments.movie_id = m._id\n" +
+                               "WHERE \"" + director + "\" IN m.directors\n"
+        );
+        return result.rowsAs(JsonObject.class);
     }
 
     public List<JsonObject> commentsOfDirector2(String director) {
-        throw new UnsupportedOperationException("Not implemented, yet");
+        var result = ctx.query("SELECT c.text\n" +
+                               "FROM `mflix-sample`._default.comments c\n" +
+                               "WHERE c.movie_id IN (SELECT RAW m._id FROM `mflix-sample`._default.movies m WHERE \"" + director + "\" IN m.directors)\n"
+        );
+        return result.rowsAs(JsonObject.class);
     }
 
     // Returns the number of documents updated.
