@@ -56,7 +56,15 @@ public class Requests {
     }
 
     public List<JsonObject> plentifulDirectors() {
-        throw new UnsupportedOperationException("Not implemented, yet");
+        var result = ctx.query("""
+                SELECT dir AS director_name, COUNT(*) AS count_film
+                FROM `mflix-sample`._default.movies m
+                UNNEST m.directors dir
+                GROUP BY dir
+                HAVING COUNT(*)  > 30
+                """
+        );
+        return result.rowsAs(JsonObject.class);
     }
 
     public List<JsonObject> confusingMovies() {
