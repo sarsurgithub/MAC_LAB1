@@ -4,6 +4,7 @@ import java.util.List;
 import com.couchbase.client.java.Cluster;
 import com.couchbase.client.java.json.JsonArray;
 import com.couchbase.client.java.json.JsonObject;
+import com.couchbase.client.java.query.QueryMetrics;
 import com.couchbase.client.java.query.QueryOptions;
 
 
@@ -130,7 +131,17 @@ public class Requests {
     }
 
     public List<JsonObject> nightMovies() {
-        throw new UnsupportedOperationException("Not implemented, yet");
+        var result = ctx.query("""
+               SELECT m._id AS movie_id, m.title
+               FROM `mflix-sample`._default.movies m
+               WHERE m._id IN (SELECT RAW sched.movieId
+                               FROM `mflix-sample`._default.theaters t
+                               UNNEST t.schedule sched
+                               GROUP BY sched.movieId
+                               HAVING MIN(sched.hourBegin) >= '18:00:00')
+                """
+        );
+        return result.rowsAs(JsonObject.class);
     }
 
 
