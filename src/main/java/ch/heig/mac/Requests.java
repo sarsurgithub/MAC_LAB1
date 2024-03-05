@@ -72,7 +72,7 @@ public class Requests {
 
     public List<JsonObject> bestMoviesOfActor(String actor) {
         var query = """
-            SELECT imdb.id as imdb_id, imdb.rating, m.`cast`
+            SELECT DISTINCT imdb.id as imdb_id, imdb.rating, m.`cast`
             FROM `mflix-sample`._default.movies m
             WHERE imdb.rating > 8 AND ISNUMBER(imdb.rating) AND ? IN `cast`
             """;
