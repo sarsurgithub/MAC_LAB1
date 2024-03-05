@@ -2,7 +2,9 @@ package ch.heig.mac;
 
 import java.util.List;
 import com.couchbase.client.java.Cluster;
+import com.couchbase.client.java.json.JsonArray;
 import com.couchbase.client.java.json.JsonObject;
+import com.couchbase.client.java.query.QueryOptions;
 
 
 public class Requests {
@@ -23,7 +25,14 @@ public class Requests {
     }
 
     public List<JsonObject> inconsistentRating() {
-        throw new UnsupportedOperationException("Not implemented, yet");
+        var result = ctx.query("""
+                SELECT imdb.id as imdb_id, tomatoes.viewer.rating as tomatoes_rating,
+                imdb.rating as imdb_rating
+                FROM `mflix-sample`._default.movies
+                WHERE tomatoes.viewer.rating > 0 AND ABS(tomatoes.viewer.rating - imdb.rating) > 7;
+                """
+        );
+        return result.rowsAs(JsonObject.class);
     }
 
     public List<JsonObject> hiddenGem() {
@@ -37,7 +46,15 @@ public class Requests {
     }
 
     public List<JsonObject> topReviewers() {
-        throw new UnsupportedOperationException("Not implemented, yet");
+        var result = ctx.query("""
+                SELECT c.email, COUNT(c) as cnt
+                FROM `mflix-sample`._default.comments c
+                GROUP BY c.email
+                ORDER BY COUNT(c) DESC
+                LIMIT 10;
+                """
+        );
+        return result.rowsAs(JsonObject.class);
     }
 
     public List<String> greatReviewers() {
@@ -51,8 +68,15 @@ public class Requests {
         return result.rowsAs(String.class);
     }
 
+
     public List<JsonObject> bestMoviesOfActor(String actor) {
-        throw new UnsupportedOperationException("Not implemented, yet");
+        var query = """
+            SELECT imdb.id as imdb_id, imdb.rating, m.`cast`
+            FROM `mflix-sample`._default.movies m
+            WHERE imdb.rating > 8 AND ISNUMBER(imdb.rating) AND ? IN `cast`
+            """;
+        var result = ctx.query(query, QueryOptions.queryOptions().parameters(JsonArray.from(actor)));
+        return result.rowsAs(JsonObject.class);
     }
 
     public List<JsonObject> plentifulDirectors() {
@@ -68,8 +92,15 @@ public class Requests {
     }
 
     public List<JsonObject> confusingMovies() {
-        throw new UnsupportedOperationException("Not implemented, yet");
+        var result = ctx.query("""
+                SELECT m._id AS movie_id, m.title
+                FROM `mflix-sample`._default.movies m
+                WHERE ARRAY_LENGTH(m.directors) > 20;
+                """
+        );
+        return result.rowsAs(JsonObject.class);
     }
+
 
     public List<JsonObject> commentsOfDirector1(String director) {
         // need to create index

@@ -26,6 +26,7 @@ public class Main {
         indices.createRequiredIndices();
 
         requests.getCollectionNames().forEach(System.out::println);
+        requests.inconsistentRating().forEach(System.out::println);
     }
 
     public static void main(String[] args) {
