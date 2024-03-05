@@ -59,7 +59,7 @@ public class Requests {
 
     public List<String> greatReviewers() {
         var result = ctx.query("""
-                        SELECT DISTINCT RAW c.email
+                        SELECT RAW c.email
                         FROM `mflix-sample`._default.comments c
                         GROUP BY c.email
                         HAVING COUNT(*) > 300
@@ -104,7 +104,7 @@ public class Requests {
 
     public List<JsonObject> commentsOfDirector1(String director) {
         // need to create index
-        var result = ctx.query("SELECT comments.text\n" +
+        var result = ctx.query("SELECT m._id AS movie_id, comments.text\n" +
                                "FROM `mflix-sample`._default.movies m\n" +
                                "JOIN `mflix-sample`._default.comments ON comments.movie_id = m._id\n" +
                                "WHERE \"" + director + "\" IN m.directors\n"
@@ -113,7 +113,7 @@ public class Requests {
     }
 
     public List<JsonObject> commentsOfDirector2(String director) {
-        var result = ctx.query("SELECT c.text\n" +
+        var result = ctx.query("SELECT c.movie_id, c.text\n" +
                                "FROM `mflix-sample`._default.comments c\n" +
                                "WHERE c.movie_id IN (SELECT RAW m._id FROM `mflix-sample`._default.movies m WHERE \"" + director + "\" IN m.directors)\n"
         );
