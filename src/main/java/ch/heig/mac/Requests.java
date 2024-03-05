@@ -122,7 +122,11 @@ public class Requests {
 
     // Returns the number of documents updated.
     public long removeEarlyProjection(String movieId) {
-        throw new UnsupportedOperationException("Not implemented, yet");
+        var result = ctx.query("UPDATE `mflix-sample`._default.theaters AS t\n" +
+                "SET t.schedule = ARRAY_REMOVE(t.schedule, s) FOR s IN t.schedule WHEN s.movieId = \"" + movieId + "\" AND s.hourBegin < '18:00:00' END\n" +
+                "WHERE ANY s IN t.schedule SATISFIES s.movieId = \"" + movieId +"\"AND s.hourBegin < '18:00:00' END;"
+        );
+        return Integer.parseInt(result.toString());
     }
 
     public List<JsonObject> nightMovies() {
