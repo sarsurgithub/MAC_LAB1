@@ -123,11 +123,13 @@ public class Requests {
 
     // Returns the number of documents updated.
     public long removeEarlyProjection(String movieId) {
-        var result = ctx.query("UPDATE `mflix-sample`._default.theaters AS t\n" +
-                "SET t.schedule = ARRAY_REMOVE(t.schedule, s) FOR s IN t.schedule WHEN s.movieId = \"" + movieId + "\" AND s.hourBegin < '18:00:00' END\n" +
-                "WHERE ANY s IN t.schedule SATISFIES s.movieId = \"" + movieId +"\"AND s.hourBegin < '18:00:00' END;"
+        var result = ctx.query("UPDATE `mflix-sample`._default.theaters\n" +
+                               "SET schedule = ARRAY s FOR s IN schedule\n" +
+                               "               WHEN NOT (s.movieId = \"" + movieId + "\" AND s.hourBegin < '18:00:00') END\n" +
+                               "WHERE ANY s IN schedule SATISFIES s.movieId = \"" + movieId + "\" AND s.hourBegin < '18:00:00' END\n",
+                QueryOptions.queryOptions().metrics(true)
         );
-        return Integer.parseInt(result.toString());
+        return result.metaData().metrics().map(QueryMetrics::mutationCount).orElse(0L);
     }
 
     public List<JsonObject> nightMovies() {
